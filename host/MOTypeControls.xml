@@ -1,0 +1,62 @@
+<Effect matchname="Pseudo/MO Type Controls" name="MO Type Controls">
+  <Group name="In">
+    <Checkbox name="In Enabled" default="true"/>
+    <Group name="Timing">
+      <Slider name="Start Time" default="0" valid_min="-36000" valid_max="36000"/>
+      <Slider name="Duration Frames" default="30" valid_min="1" valid_max="10000"/>
+      <Slider name="Overlap" default="90" valid_min="0" valid_max="99" DISPLAY_PERCENT="true"/>
+      <Slider name="Ease" default="100" valid_min="-100" valid_max="100" DISPLAY_PERCENT="true"/>
+    </Group>
+    <Group name="Position">
+      <Checkbox name="Position Enabled" default="true"/>
+      <Slider name="Direction" default="1" valid_min="1" valid_max="6"/>
+      <Slider name="Distance" default="40" valid_min="-5000" valid_max="5000"/>
+    </Group>
+    <Group name="Opacity">
+      <Checkbox name="Opacity Enabled" default="false"/>
+      <Slider name="Visibility Cut" default="0" valid_min="0" valid_max="100" DISPLAY_PERCENT="true"/>
+    </Group>
+    <Group name="Scale">
+      <Checkbox name="Scale Enabled" default="false"/>
+      <Slider name="Scale From" default="80" valid_min="0" valid_max="1000" DISPLAY_PERCENT="true"/>
+      <Slider name="Scale Duration Frames" default="30" valid_min="1" valid_max="10000"/>
+      <Slider name="Scale Ease" default="100" valid_min="-100" valid_max="100" DISPLAY_PERCENT="true"/>
+    </Group>
+    <Group name="Tracking">
+      <Checkbox name="Tracking Enabled" default="false"/>
+      <Slider name="Tracking From" default="50" valid_min="-1000" valid_max="1000"/>
+      <Slider name="Tracking Duration Frames" default="30" valid_min="1" valid_max="10000"/>
+      <Slider name="Tracking Ease" default="100" valid_min="-100" valid_max="100" DISPLAY_PERCENT="true"/>
+    </Group>
+  </Group>
+  <Group name="Out">
+    <Checkbox name="Out Enabled" default="false"/>
+    <Group name="Timing">
+      <Slider name="Out Start Time" default="0" valid_min="-36000" valid_max="36000"/>
+      <Slider name="Out Duration Frames" default="30" valid_min="1" valid_max="10000"/>
+      <Slider name="Out Overlap" default="90" valid_min="0" valid_max="99" DISPLAY_PERCENT="true"/>
+      <Slider name="Out Ease" default="100" valid_min="-100" valid_max="100" DISPLAY_PERCENT="true"/>
+    </Group>
+    <Group name="Position">
+      <Checkbox name="Out Position Enabled" default="true"/>
+      <Slider name="Out Direction" default="1" valid_min="1" valid_max="6"/>
+      <Slider name="Out Distance" default="40" valid_min="-5000" valid_max="5000"/>
+    </Group>
+    <Group name="Opacity">
+      <Checkbox name="Out Opacity Enabled" default="false"/>
+      <Slider name="Out Visibility Cut" default="85" valid_min="0" valid_max="100" DISPLAY_PERCENT="true"/>
+    </Group>
+    <Group name="Scale">
+      <Checkbox name="Out Scale Enabled" default="false"/>
+      <Slider name="Out Scale To" default="80" valid_min="0" valid_max="1000" DISPLAY_PERCENT="true"/>
+      <Slider name="Out Scale Duration Frames" default="30" valid_min="1" valid_max="10000"/>
+      <Slider name="Out Scale Ease" default="100" valid_min="-100" valid_max="100" DISPLAY_PERCENT="true"/>
+    </Group>
+    <Group name="Tracking">
+      <Checkbox name="Out Tracking Enabled" default="false"/>
+      <Slider name="Out Tracking To" default="50" valid_min="-1000" valid_max="1000"/>
+      <Slider name="Out Tracking Duration Frames" default="30" valid_min="1" valid_max="10000"/>
+      <Slider name="Out Tracking Ease" default="100" valid_min="-100" valid_max="100" DISPLAY_PERCENT="true"/>
+    </Group>
+  </Group>
+</Effect>
