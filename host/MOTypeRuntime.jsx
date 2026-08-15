@@ -16,6 +16,16 @@ function MOTypeDirection(preset) {
     if (preset == "fade") { return 5; }
     return 1;
 }
+function MOTypeUnitCount(layer, unit) {
+    var source = layer.property("ADBE Text Properties").property("ADBE Text Document").value.text;
+    if (unit == "lines") { return Math.max(1, source.split(/\r\n|\r|\n/).length); }
+    if (unit == "words") { var words = source.match(/\S+/g); return words == null ? 1 : Math.max(1, words.length); }
+    return Math.max(1, source.replace(/\s/g, "").length);
+}
+function MOTypeTotalDuration(layer, unit, duration, overlap, frameDuration) {
+    var count = MOTypeUnitCount(layer, unit), frames = Math.max(1, Number(duration)), ov = Math.max(0, Math.min(0.99, Number(overlap) / 100));
+    return (frames + (count - 1) * frames * (1 - ov)) * frameDuration;
+}
 function MOTypeRemoveAnimators(layer) {
     var text = layer.property("ADBE Text Properties");
     if (text == null) { return 0; }
@@ -181,7 +191,7 @@ function MOTypeApplyPhase(phase, unit, preset, distance, duration, overlap, ease
         MOTypeRemovePhaseAnimators(layer, isOut);
         if (isOut) {
             if (controlWasCreated) { MOTypeSetControl(control, "In Enabled", 0); }
-            MOTypeSetMarker(layer, "MO Type Out", comp.time);
+            MOTypeSetMarker(layer, "MO Type Out", Math.max(layer.inPoint, layer.outPoint - MOTypeTotalDuration(layer, unit, duration, overlap, comp.frameDuration)));
             MOTypeSetControl(control, "Out Enabled", 1);
             MOTypeSetControl(control, "Out Start Time", 0);
             MOTypeSetControl(control, "Out Duration Frames", Number(duration));
@@ -192,7 +202,7 @@ function MOTypeApplyPhase(phase, unit, preset, distance, duration, overlap, ease
             MOTypeSetControl(control, "Out Position Enabled", preset != "none" && preset != "fade" ? 1 : 0);
         } else {
             MOTypeRemoveMarker(layer, "MO Type Start");
-            MOTypeSetMarker(layer, "MO Type In", comp.time);
+            MOTypeSetMarker(layer, "MO Type In", layer.inPoint);
             MOTypeSetControl(control, "In Enabled", 1);
             MOTypeSetControl(control, "Start Time", 0);
             MOTypeSetControl(control, "Duration Frames", Number(duration));
@@ -313,11 +323,11 @@ function MOTypeApplySavedPreset(encoded, mode) {
         if (control == null) { control = effects.addProperty("Pseudo/MO Type Controls"); control.name = "MO Type Controls"; controlWasCreated = true; }
         var animators = text.property("ADBE Text Animators"), applyIn = mode == "in" || mode == "both", applyOut = mode == "out" || mode == "both";
         if (applyIn) {
-            MOTypeRemovePhaseAnimators(layer, false); MOTypeSetMarker(layer, "MO Type In", comp.time); MOTypeWritePhase(control, data["in"], false); MOTypeAddPhase(animators, data.unit, data["in"].direction, data["in"].distance, false);
+            MOTypeRemovePhaseAnimators(layer, false); MOTypeSetMarker(layer, "MO Type In", layer.inPoint); MOTypeWritePhase(control, data["in"], false); MOTypeAddPhase(animators, data.unit, data["in"].direction, data["in"].distance, false);
         }
         if (applyOut) {
             if (!applyIn && controlWasCreated) { MOTypeSetControl(control, "In Enabled", 0); }
-            MOTypeRemovePhaseAnimators(layer, true); var outTime = mode == "both" ? comp.time + Math.max(1, Number(data.outOffsetFrames)) * comp.frameDuration : comp.time; MOTypeSetMarker(layer, "MO Type Out", outTime); MOTypeWritePhase(control, data["out"], true); MOTypeAddPhase(animators, data.unit, data["out"].direction, data["out"].distance, true);
+            MOTypeRemovePhaseAnimators(layer, true); var outTime = Math.max(layer.inPoint, layer.outPoint - MOTypeTotalDuration(layer, data.unit, data["out"].duration, data["out"].overlap, comp.frameDuration)); MOTypeSetMarker(layer, "MO Type Out", outTime); MOTypeWritePhase(control, data["out"], true); MOTypeAddPhase(animators, data.unit, data["out"].direction, data["out"].distance, true);
         }
         result = "Saved preset applied: " + mode.toUpperCase() + ".";
     } catch (error) { result = "Could not apply saved preset: " + error.toString(); }
