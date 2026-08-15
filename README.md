@@ -9,6 +9,7 @@ MO Type is a CEP panel for Adobe After Effects that creates modular text animati
 - Position, opacity, scale, and tracking modules
 - Duration in frames, overlap, bipolar easing, and visibility cut
 - `MO Type In` and `MO Type Out` timeline markers
+- Automatic marker placement: IN at the layer start and OUT timed to finish at the layer end
 - Controls stored on the text layer—no controller layer required
 - Rich preset library captured from selected layers
 
