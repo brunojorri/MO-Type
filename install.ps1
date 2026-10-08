@@ -55,16 +55,17 @@ $backup = "$presetEffects.before-mo-type-$timestamp.bak"
 Copy-Item -LiteralPath $presetEffects -Destination $backup -Force
 $xml = Get-Content -LiteralPath $presetEffects -Raw
 $fragment = Get-Content -LiteralPath $definition -Raw
-if ($xml -match 'matchname="Pseudo/MO Type Controls"') {
-    $xml = [regex]::Replace(
-        $xml,
-        '(?s)<Effect matchname="Pseudo/MO Type Controls".*?</Effect>',
-        [System.Text.RegularExpressions.MatchEvaluator]{ param($match) $fragment },
-        1
-    )
-} else {
-    $xml = $xml.Replace('</Effects>', "`r`n$fragment`r`n</Effects>")
+$startTag = '<Effect matchname="Pseudo/MO Type Controls"'
+$startIndex = $xml.IndexOf($startTag, [StringComparison]::Ordinal)
+if ($startIndex -ge 0) {
+    $endIndex = $xml.IndexOf('</Effect>', $startIndex, [StringComparison]::Ordinal)
+    if ($endIndex -lt 0) { throw 'Existing MO Type Controls definition is malformed.' }
+    $endIndex += '</Effect>'.Length
+    $xml = $xml.Remove($startIndex, $endIndex - $startIndex)
 }
+$rootEnd = $xml.LastIndexOf('</Effects>', [StringComparison]::Ordinal)
+if ($rootEnd -lt 0) { throw 'PresetEffects.xml has no closing Effects tag.' }
+$xml = $xml.Insert($rootEnd, "`r`n$fragment`r`n")
 [IO.File]::WriteAllText($presetEffects, $xml, [Text.UTF8Encoding]::new($false))
 
 $verification = Get-Content -LiteralPath $presetEffects -Raw

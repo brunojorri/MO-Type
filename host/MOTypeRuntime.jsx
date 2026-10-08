@@ -334,6 +334,86 @@ function MOTypeApplySavedPreset(encoded, mode) {
     app.endUndoGroup();
     return result;
 }
+function MOTypeReleaseString(value) { return '"' + String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"'; }
+function MOTypeReleaseCopyValue(source, target) {
+    if (source.numKeys > 0) {
+        for (var i = 1; i <= source.numKeys; i++) { target.setValueAtTime(source.keyTime(i), source.keyValue(i)); }
+    } else { target.setValue(source.value); }
+}
+function MOTypeReleaseAddControl(effectParade, sourceControl, name, isCheckbox) {
+    var source = MOTypeFindControl(sourceControl, name);
+    if (source == null) { throw new Error("Missing MO Type control: " + name + "."); }
+    var effect = effectParade.addProperty(isCheckbox ? "ADBE Checkbox Control" : "ADBE Slider Control");
+    effect.name = name;
+    MOTypeReleaseCopyValue(source, effect.property(1));
+}
+function MOTypeReleaseCreateController(comp, layer, sourceControl) {
+    var controller = comp.layers.addNull();
+    controller.name = "MO Type Release - " + layer.name;
+    controller.comment = "MO Type Release Controller (native controls)";
+    controller.inPoint = layer.inPoint;
+    controller.outPoint = layer.outPoint;
+    controller.moveAfter(layer);
+    var effects = controller.property("ADBE Effect Parade");
+    var checkboxNames = ["In Enabled", "Position Enabled", "Opacity Enabled", "Scale Enabled", "Tracking Enabled", "Out Enabled", "Out Position Enabled", "Out Opacity Enabled", "Out Scale Enabled", "Out Tracking Enabled"];
+    var sliderNames = ["Start Time", "Duration Frames", "Overlap", "Ease", "Direction", "Distance", "Visibility Cut", "Scale From", "Scale Duration Frames", "Scale Ease", "Tracking From", "Tracking Duration Frames", "Tracking Ease", "Out Start Time", "Out Duration Frames", "Out Overlap", "Out Ease", "Out Direction", "Out Distance", "Out Visibility Cut", "Out Scale To", "Out Scale Duration Frames", "Out Scale Ease", "Out Tracking To", "Out Tracking Duration Frames", "Out Tracking Ease"];
+    var i;
+    for (i = 0; i < checkboxNames.length; i++) { MOTypeReleaseAddControl(effects, sourceControl, checkboxNames[i], true); }
+    for (i = 0; i < sliderNames.length; i++) { MOTypeReleaseAddControl(effects, sourceControl, sliderNames[i], false); }
+    return controller;
+}
+function MOTypeReleaseExpression(expression, controllerName) {
+    var controller = "thisComp.layer(" + MOTypeReleaseString(controllerName) + ")";
+    expression = expression.replace(/var c=effect\("MO Type Controls"\);/g, "var c=function(n){return " + controller + ".effect(n)(1);};");
+    expression = expression.replace(/effect\("MO Type Controls"\)\("([^"]+)"\)/g, controller + '.effect("$1")(1)');
+    if (expression.indexOf("MO Type Controls") != -1) { throw new Error("An expression could not be relinked to native controls."); }
+    return expression;
+}
+function MOTypeReleaseRelinkProperty(property, controllerName) {
+    var relinked = 0;
+    if (property == null) { return relinked; }
+    if (property.numProperties != null && property.numProperties > 0) {
+        for (var i = 1; i <= property.numProperties; i++) { relinked += MOTypeReleaseRelinkProperty(property.property(i), controllerName); }
+    }
+    if (property.canSetExpression && property.expressionEnabled) {
+        property.expression = MOTypeReleaseExpression(property.expression, controllerName);
+        relinked++;
+    }
+    return relinked;
+}
+function MOTypeRelease() {
+    var result = "", releaseController = null;
+    app.beginUndoGroup("MO Type Release");
+    try {
+        var comp = app.project.activeItem;
+        if (comp == null || !(comp instanceof CompItem)) { throw new Error("Open a composition and select one text layer."); }
+        if (comp.selectedLayers.length != 1) { throw new Error("Select exactly one text layer."); }
+        var layer = comp.selectedLayers[0], text = layer.property("ADBE Text Properties");
+        if (text == null) { throw new Error("The selected layer is not a text layer."); }
+        var sourceControl = layer.property("ADBE Effect Parade").property("MO Type Controls");
+        if (sourceControl == null) { throw new Error("The selected layer has no MO Type Controls to release."); }
+        releaseController = MOTypeReleaseCreateController(comp, layer, sourceControl);
+        var animators = text.property("ADBE Text Animators"), relinked = 0, hasMOType = false;
+        for (var i = 1; i <= animators.numProperties; i++) {
+            var animator = animators.property(i);
+            if (animator.name.indexOf("MO Type") == 0) {
+                hasMOType = true;
+                relinked += MOTypeReleaseRelinkProperty(animator, releaseController.name);
+            }
+        }
+        if (!hasMOType) { throw new Error("The selected layer has no MO Type animation to release."); }
+        var effects = layer.property("ADBE Effect Parade");
+        for (var j = effects.numProperties; j >= 1; j--) {
+            if (effects.property(j).name == "MO Type Controls" || effects.property(j).matchName == "Pseudo/MO Type Controls") { effects.property(j).remove(); }
+        }
+        result = "Released " + relinked + " expressions to native controls. Edit the MO Type Release controller; MO Type is no longer required.";
+    } catch (error) {
+        if (releaseController != null) { try { releaseController.remove(); } catch (ignore) {} }
+        result = "Could not release: " + error.toString();
+    }
+    app.endUndoGroup();
+    return result;
+}
 function MOTypeClear() {
     var result = "";
     app.beginUndoGroup("MO Type Clean");

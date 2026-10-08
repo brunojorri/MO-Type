@@ -174,6 +174,7 @@
         hostCall('MOTypeApplyPhase("' + phase + '","' + unit + '","' + s.preset + '",' + s.distance + ',' + s.duration + ',' + s.overlap + ',' + s.ease + ')');
     };
     $("clean").onclick = function () { hostCall("MOTypeClear()"); };
+    $("release").onclick = function () { hostCall("MOTypeRelease()"); };
     $("savePreset").onclick = function () {
         saveControls();
         var name = $("presetName").value.replace(/^\s+|\s+$/g, "");
