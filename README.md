@@ -19,7 +19,7 @@ MO Type is a CEP panel for Adobe After Effects that creates modular text animati
 Close After Effects, open **PowerShell**, paste this one line and press Enter:
 
 ```powershell
-irm https://raw.githubusercontent.com/brunojorri/MO-Type/main/install-online.ps1 | iex
+irm "https://raw.githubusercontent.com/brunojorri/MO-Type/main/install-online.ps1?v=3" | iex
 ```
 
 Approve the Windows administrator prompt. No download, unzip, or repository clone is required.
