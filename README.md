@@ -16,16 +16,15 @@ MO Type is a CEP panel for Adobe After Effects that creates modular text animati
 
 ## Quick installation on Windows
 
-1. Download or clone this repository.
-2. Close After Effects.
-3. Open PowerShell in the repository folder.
-4. Run:
+Close After Effects, open **PowerShell**, paste this one line and press Enter:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\install.ps1
+irm https://raw.githubusercontent.com/brunojorri/MO-Type/main/install-online.ps1 | iex
 ```
 
-Approve the Windows administrator prompt. The installer will:
+Approve the Windows administrator prompt. No download, unzip, or repository clone is required.
+
+The command downloads the current MO Type package directly from this repository and runs its installer. It will:
 
 - copy the CEP extension to the current user's Adobe extensions folder;
 - enable CEP debug loading;
@@ -34,6 +33,14 @@ Approve the Windows administrator prompt. The installer will:
 - register `MO Type Controls` as a pseudo effect.
 
 Restart After Effects and open **Window > Extensions > MO Type**.
+
+### Local/manual installation
+
+If you prefer to install from a downloaded copy of the repository, open PowerShell in its folder and run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install.ps1
+```
 
 If automatic detection fails, specify the After Effects folder:
 
