@@ -17,7 +17,17 @@ try {
         throw 'The downloaded MO Type installer was not found.'
     }
 
-    & $installer.FullName -AfterEffectsPath $AfterEffectsPath
+    # The bootstrap itself runs from memory, but the package installer is a
+    # downloaded file. Launch it explicitly with Bypass so restrictive local
+    # execution policies do not prevent a normal one-line installation.
+    $installerArguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $installer.FullName)
+    if ($AfterEffectsPath) {
+        $installerArguments += @('-AfterEffectsPath', $AfterEffectsPath)
+    }
+    & powershell.exe @installerArguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "MO Type installer failed with exit code $LASTEXITCODE."
+    }
 }
 finally {
     if (Test-Path -LiteralPath $temporaryRoot) {
